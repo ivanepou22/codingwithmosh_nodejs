@@ -1,0 +1,162 @@
+import Joi from "joi";
+import mongoose from "mongoose";
+import { Movie } from "../models/movieModel.js";
+import { Customer } from "../models/customerModel.js";
+import { Rental } from "../models/rentalModel.js";
+
+const objectId = Joi.string()
+    .hex()
+    .length(24)
+    .messages({
+        "string.hex": "customerId / movieId must be a valid hexadecimal string",
+        "string.length": "customerId / movieId must be 24 characters long",
+        "any.required": "customerId / movieId is required"
+    });
+
+export const getRentals = async (req, res) => {
+    try {
+        const query = req.user.isAdmin ? {} : { 'user._id': req.user._id };
+        const rentals = await Rental.find(query).sort('-dateOut');
+        res.send(rentals);
+    } catch (error) {
+        res.status(500).send('Internal Server Error');
+    }
+}
+
+export const getRental = async (req, res) => {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id))
+        return res.status(400).send('Invalid Rental');
+
+    try {
+        const query = req.user.isAdmin ? { _id: req.params.id } : { _id: req.params.id, 'user._id': req.user._id };
+        const rental = await Rental.findOne(query);
+        if (!rental) return res.status(404).send('Rental not found');
+        res.send(rental);
+    } catch (error) {
+        res.status(500).send('Internal Server Error');
+    }
+}
+
+export const deleteRental = async (req, res) => {
+    try {
+        const query = req.user.isAdmin ? { _id: req.params.id } : { _id: req.params.id, 'user._id': req.user._id };
+        const rental = await Rental.findOneAndDelete(query);
+        if (!rental) return res.status(404).send('Rental not found');
+        res.send(rental);
+    } catch (error) {
+        res.status(500).send('Internal Server Error');
+    }
+}
+
+export const updateRental = async (req, res) => {
+    const { error } = validateRentalUpdate(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
+
+    const updateData = {};
+    const query = req.user.isAdmin ? { _id: req.params.id } : { _id: req.params.id, 'user._id': req.user._id };
+
+    if (req.body.dateOut !== undefined) updateData.dateOut = req.body.dateOut;
+    if (req.body.rentalFee !== undefined) updateData.rentalFee = req.body.rentalFee;
+    if (req.body.dateReturned !== undefined) updateData.dateReturned = req.body.dateReturned;
+
+    if (req.body.customerId) {
+        const customer = await Customer.findById(req.body.customerId);
+        if (!customer) return res.status(400).send('Invalid customer.');
+
+        updateData.customer = {
+            _id: customer._id,
+            name: customer.name,
+            phone: customer.phone,
+            isGold: customer.isGold
+        };
+    }
+
+    if (req.body.movieId) {
+        const movie = await Movie.findById(req.body.movieId);
+        if (!movie) return res.status(400).send('Invalid movie.');
+
+        updateData.movie = {
+            _id: movie._id,
+            title: movie.title,
+            dailyRentalRate: movie.dailyRentalRate
+        };
+    }
+
+    try {
+        const rental = await Rental.findOneAndUpdate(
+            query,
+            { $set: updateData },
+            { returnDocument: 'after', new: true }
+        );
+        if (!rental) return res.status(404).send('Rental not found');
+        res.send(rental);
+    } catch (error) {
+        res.status(500).send('Internal Server Error');
+    }
+}
+
+export const createRental = async (req, res) => {
+    const { error } = validateRental(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
+
+    if (!mongoose.Types.ObjectId.isValid(req.body.customerId))
+        return res.status(400).send('Invalid customerId');
+
+    if (!mongoose.Types.ObjectId.isValid(req.body.movieId))
+        return res.status(400).send('Invalid movieId');
+
+    try {
+        const customer = await Customer.findById(req.body.customerId);
+        if (!customer) return res.status(400).send('Invalid customer.');
+
+        const movie = await Movie.findById(req.body.movieId);
+        if (!movie) return res.status(400).send('Invalid Movie.');
+
+        if (movie.numberInStock === 0) return res.status(400).send('Movie out of stock.');
+
+        const rental = new Rental({
+            user: {
+                _id: req.user._id,
+                name: req.user.name,
+                email: req.user.email
+            },
+            customer: {
+                _id: customer._id,
+                name: customer.name,
+                phone: customer.phone,
+                isGold: customer.isGold
+            },
+            movie: {
+                _id: movie._id,
+                title: movie.title,
+                dailyRentalRate: movie.dailyRentalRate
+            }
+        });
+
+        const savedRental = await rental.save();
+        movie.numberInStock--;
+        await movie.save();
+
+        res.send(savedRental);
+    } catch (error) {
+        res.status(500).send('Internal Server Error');
+    }
+}
+
+function validateRental(rental) {
+    const schema = Joi.object({
+        customerId: objectId.required(),
+        movieId: objectId.required()
+    });
+
+    return schema.validate(rental, { abortEarly: false });
+}
+
+function validateRentalUpdate(rental) {
+    const schema = Joi.object({
+        customerId: objectId,
+        movieId: objectId
+    });
+
+    return schema.validate(rental, { abortEarly: false });
+}
