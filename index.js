@@ -3,6 +3,9 @@ import helmet from 'helmet';
 // import config from 'config';
 import morgan from 'morgan';
 import debug from 'debug';
+import winston from 'winston';
+import 'winston-mongodb';
+import dotenv from 'dotenv';
 import genreRoutes from './routes/genreRoutes.js';
 import homeRoutes from './routes/homeRoute.js';
 import { dbConnect } from './dbConfig.js';
@@ -18,6 +21,30 @@ const appDebug = debug('app:startup');
 const dbDebug = debug('app:db');
 
 const app = express();
+dotenv.config();
+
+// Handle uncaught exceptions
+// process.on('uncaughtException', (ex) => {
+//     winston.error(ex.message, ex);
+//     process.exit(1); // Exit the process after logging the error
+// });
+winston.exceptions.handle(
+    new winston.transports.File({ filename: 'uncaughtExceptions.log' })
+);
+
+// Handle unhandled promise rejections
+// process.on('unhandledRejection', (ex) => {
+//     // winston.error(ex.message, ex);
+//     // process.exit(1); // Exit the process after logging the error
+//     throw ex; // Let winston handle the unhandled rejection as an uncaught exception
+// });
+winston.rejections.handle(
+    new winston.transports.File({ filename: 'unhandledRejections.log' })
+);
+
+winston.add(new winston.transports.File({ filename: 'logfile.log' }));
+winston.add(new winston.transports.MongoDB({ db: process.env.MONGODB_URL }));
+
 app.use(helmet());
 app.use(express.json());
 
