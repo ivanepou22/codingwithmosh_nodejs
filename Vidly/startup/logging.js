@@ -1,7 +1,9 @@
 import winston from 'winston';
-import 'winston-mongodb';
+import { MongoClient } from 'mongodb';
+import dotenv from 'dotenv';
+dotenv.config();
 
-export function logging() {
+export async function logging() {
     // Handle uncaught exceptions
     winston.exceptions.handle(
         new winston.transports.Console({ colorize: true, prettyPrint: true }),
@@ -13,4 +15,5 @@ export function logging() {
     );
     winston.add(new winston.transports.File({ filename: 'logfile.log' }));
     // winston.add(new winston.transports.MongoDB({ db: process.env.MONGODB_URL }));
+
 }
