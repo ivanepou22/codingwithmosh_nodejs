@@ -1,0 +1,29 @@
+#Types of Automated tests
+- Unit tests
+- Integration tests
+- End-to-End tests
+
+##Unit Tests 
+* Tests a unit of an application without its external dependencies.
+like files, message queues, web services etc. It tests a unit of work.
+ - Cheap to write 
+ - Execute fast
+
+ ##Integration Test 
+ * Tests the application with its external dependencies.
+ It tests the Integration of your code with its external dependencies like files, databases etc.
+ it takes a few units or classes and tests their behavior as a whole.
+
+ ##End-To-End Test
+ * Drives an application through its user interface.
+ -> Use selenium
+
+ ### Takeaways
+ - Favour unit tests over e2e tests.
+ - Cover unit tests gaps with Integration tests.
+ - use end-to-end tests sparingly.
+
+ ### Tests Frameworks
+  - Jasmine
+  - Mocha [chai,sinon]
+  - Jest*
