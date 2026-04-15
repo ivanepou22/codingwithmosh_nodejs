@@ -12,6 +12,7 @@ import rentalRoutes from './routes/RentalRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import { error } from './middleware/error.js';
+import { verifyMongooseId } from './middleware/error.js';
 
 const appDebug = debug('app:startup');
 const dbDebug = debug('app:db');
