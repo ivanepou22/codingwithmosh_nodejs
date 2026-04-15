@@ -11,9 +11,6 @@ export const getGenres = asyncMiddleware(async (req, res) => {
 });
 
 export const getGenre = asyncMiddleware(async (req, res) => {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id))
-        return res.status(400).send('Invalid genreId');
-
     const query = req.user.isAdmin ? { _id: req.params.id } : { _id: req.params.id, 'user._id': req.user._id };
     const genre = await Genre.findOne(query);
     if (!genre) return res.status(404).send('Genre not found');
@@ -21,9 +18,6 @@ export const getGenre = asyncMiddleware(async (req, res) => {
 });
 
 export const deleteGenre = asyncMiddleware(async (req, res) => {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id))
-        return res.status(400).send('Invalid genreId');
-
     const query = req.user.isAdmin ? { _id: req.params.id } : { _id: req.params.id, 'user._id': req.user._id };
     const genre = await Genre.findOneAndDelete(query);
     if (!genre) return res.status(404).send('Genre not found');
@@ -31,9 +25,6 @@ export const deleteGenre = asyncMiddleware(async (req, res) => {
 });
 
 export const updateGenre = asyncMiddleware(async (req, res) => {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id))
-        return res.status(400).send('Invalid genreId');
-
     const { error } = validateGenre(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
