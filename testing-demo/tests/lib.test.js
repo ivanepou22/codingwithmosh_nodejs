@@ -54,3 +54,33 @@ describe('getCurrencies', () => {
         expect(result).toEqual(expect.arrayContaining(['USD', 'AUD', 'EUR']));
     });
 });
+
+describe('getProduct', () => {
+    it('Should return the product with the given id', () => {
+        const result = lib.getProduct(1);
+        // Too specific
+        // expect(result.id).toBe(1);
+        // expect(result.price).toBe(10);
+        // Proper way
+        expect(result).toEqual({ id: 1, price: 10 });
+        expect(result).toMatchObject({ id: 1, price: 10 });
+        expect(result).toHaveProperty('id', 1);
+        expect(result).toHaveProperty('price', 10);
+        // Ideal way
+        expect(result).toEqual(expect.objectContaining({ id: 1, price: 10 }));
+    });
+});
+
+describe('registerUser', () => {
+    it('Should throw if username is falsy', () => {
+        const args = [null, undefined, NaN, '', 0, false];
+        args.forEach(a => {
+            expect(() => { lib.registerUser(a) }).toThrow();
+        });
+    });
+    it('Should return a user object if valid username is passed', () => {
+        const result = lib.registerUser('Ivan');
+        expect(result).toMatchObject({ username: 'Ivan' });
+        expect(result.id).toBeGreaterThan(0);
+    });
+});
