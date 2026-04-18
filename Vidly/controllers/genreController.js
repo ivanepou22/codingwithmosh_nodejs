@@ -42,8 +42,6 @@ export const createGenre = asyncMiddleware(async (req, res) => {
     const { error } = validateGenre(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    if (!mongoose.Types.ObjectId.isValid(req.user._id))
-        return res.status(400).send('Invalid userId');
     const user = await User.findById(req.user._id);
     if (!user) return res.status(400).send('Invalid user');
 
