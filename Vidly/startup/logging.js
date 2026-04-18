@@ -16,7 +16,6 @@ export async function logging() {
         new winston.transports.File({ filename: 'unhandledRejections.log' })
     );
     winston.add(new winston.transports.File({ filename: 'logfile.log' }));
-    // winston.add(new winston.transports.MongoDB({ db: process.env.MONGODB_URL }));
 }
 
 let options = {
