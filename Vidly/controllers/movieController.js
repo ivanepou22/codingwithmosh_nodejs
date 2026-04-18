@@ -4,6 +4,7 @@ import { Genre } from "../models/genreModel.js";
 import mongoose from "mongoose";
 import { User } from "../models/userModel.js";
 import { asyncMiddleware } from "../middleware/async.js";
+import { validateMovie, validateUpdateMovie } from "../validation/validateMovie.js";
 
 export const getMovies = asyncMiddleware(async (req, res) => {
     const query = req.user.isAdmin ? {} : { 'user._id': req.user._id };
@@ -85,23 +86,3 @@ export const createMovie = asyncMiddleware(async (req, res) => {
     const savedMovie = await movie.save();
     res.send(savedMovie);
 });
-
-export const validateMovie = (movie) => {
-    const schema = Joi.object({
-        title: Joi.string().min(2).required(),
-        genreId: Joi.string().required(),
-        numberInStock: Joi.number().min(0).default(0),
-        dailyRentalRate: Joi.number().min(0).default(0)
-    })
-    return schema.validate(movie);
-}
-
-export const validateUpdateMovie = (movie) => {
-    const schema = Joi.object({
-        title: Joi.string().min(2),
-        genreId: Joi.string(),
-        numberInStock: Joi.number(),
-        dailyRentalRate: Joi.number()
-    })
-    return schema.validate(movie);
-}

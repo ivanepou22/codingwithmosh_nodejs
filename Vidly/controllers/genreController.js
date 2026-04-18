@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { Genre } from "../models/genreModel.js";
 import { User } from "../models/userModel.js";
 import { asyncMiddleware } from "../middleware/async.js";
+import { validateGenre } from "../validation/validateGenre.js";
 
 export const getGenres = asyncMiddleware(async (req, res) => {
     const query = req.user.isAdmin ? {} : { 'user._id': req.user._id };
@@ -57,10 +58,3 @@ export const createGenre = asyncMiddleware(async (req, res) => {
     const savedGenre = await genre.save();
     res.send(savedGenre);
 });
-
-export const validateGenre = (genre) => {
-    const schema = Joi.object({
-        name: Joi.string().min(3).required(),
-    })
-    return schema.validate(genre);
-}

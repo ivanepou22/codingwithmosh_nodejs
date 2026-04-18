@@ -6,6 +6,7 @@ import { Rental } from "../models/rentalModel.js";
 import { objectId } from "../validation/customJoi.js";
 import { asyncMiddleware } from "../middleware/async.js";
 import { User } from "../models/userModel.js";
+import { validateRental, validateRentalUpdate } from "../validation/validateRental.js";
 
 export const getRentals = asyncMiddleware(async (req, res) => {
     const query = req.user.isAdmin ? {} : { 'user._id': req.user._id };
@@ -120,21 +121,3 @@ export const createRental = asyncMiddleware(async (req, res) => {
 
     res.send(savedRental);
 });
-
-function validateRental(rental) {
-    const schema = Joi.object({
-        customerId: objectId.required(),
-        movieId: objectId.required()
-    });
-
-    return schema.validate(rental, { abortEarly: false });
-}
-
-function validateRentalUpdate(rental) {
-    const schema = Joi.object({
-        customerId: objectId,
-        movieId: objectId
-    });
-
-    return schema.validate(rental, { abortEarly: false });
-}

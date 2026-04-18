@@ -4,6 +4,7 @@ import _ from "lodash";
 import { Customer } from "../models/customerModel.js";
 import { User } from "../models/userModel.js";
 import { asyncMiddleware } from "../middleware/async.js";
+import { validateCustomer } from "../validation/validateCustomer.js";
 
 export const getCustomers = asyncMiddleware(async (req, res) => {
     const query = req.user.isAdmin ? {} : { 'user._id': req.user._id };
@@ -79,12 +80,3 @@ export const createCustomer = asyncMiddleware(async (req, res) => {
     const savedCustomer = await customer.save();
     res.send(_.pick(savedCustomer, ['_id', 'name', 'phone', 'isGold', 'user']));
 });
-
-export const validateCustomer = (customer) => {
-    const schema = Joi.object({
-        name: Joi.string().min(5).max(255).required(),
-        phone: Joi.string().min(5).max(50).required(),
-        isGold: Joi.boolean()
-    })
-    return schema.validate(customer);
-}

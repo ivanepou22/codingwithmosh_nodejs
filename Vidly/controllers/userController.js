@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import _ from "lodash";
 import { User } from "../models/userModel.js";
 import { asyncMiddleware } from "../middleware/async.js";
+import { validateUser } from "../validation/validateUser.js";
 
 export const getUsers = asyncMiddleware(async (_req, res) => {
     const users = await User.find().sort('name').select('-password');
@@ -55,13 +56,3 @@ export const updateUser = asyncMiddleware(async (req, res) => {
     if (!user) return res.status(404).send('User not found');
     res.send(user);
 });
-
-export const validateUser = (user) => {
-    const schema = Joi.object({
-        name: Joi.string().min(5).max(50).required(),
-        email: Joi.string().min(5).max(255).required().email(),
-        password: Joi.string().min(5).max(1024).required(),
-        isAdmin: Joi.boolean()
-    });
-    return schema.validate(user);
-}

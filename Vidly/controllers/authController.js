@@ -2,11 +2,12 @@ import Joi from 'joi';
 import bcrypt from 'bcrypt';
 import { User } from '../models/userModel.js';
 import { asyncMiddleware } from '../middleware/async.js';
+import { validateAuth } from '../validation/validateAuth.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
 export const authenticate = asyncMiddleware(async (req, res) => {
-    const { error } = validateUser(req.body);
+    const { error } = validateAuth(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
     //check if the user with the given email exists
@@ -22,11 +23,3 @@ export const authenticate = asyncMiddleware(async (req, res) => {
 
     res.status(200).send({ token });
 });
-
-const validateUser = (req) => {
-    const schema = Joi.object({
-        email: Joi.string().min(5).max(255).required().email(),
-        password: Joi.string().min(5).max(255).required()
-    });
-    return schema.validate(req);
-}
