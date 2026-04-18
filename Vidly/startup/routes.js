@@ -6,6 +6,7 @@ import userRoutes from '../routes/userRoutes.js';
 import authRoutes from '../routes/authRoutes.js';
 import genreRoutes from '../routes/genreRoutes.js';
 import homeRoutes from '../routes/homeRoute.js';
+import errorLogRoutes from '../routes/errorLogRoutes.js';
 import { error } from '../middleware/error.js';
 
 export function routes(app) {
@@ -17,7 +18,7 @@ export function routes(app) {
     app.use('/api/v1/rentals', rentalRoutes);
     app.use('/api/v1/users', userRoutes);
     app.use('/api/v1/auth', authRoutes);
-
+    app.use('/api/v1/logs', errorLogRoutes);
     // Error handling middleware should be registered after all routes and other middleware
     app.use(error);
 }
