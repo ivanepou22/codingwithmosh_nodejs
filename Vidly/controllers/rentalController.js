@@ -3,52 +3,33 @@ import mongoose from "mongoose";
 import { Movie } from "../models/movieModel.js";
 import { Customer } from "../models/customerModel.js";
 import { Rental } from "../models/rentalModel.js";
+import { objectId } from "../validation/customJoi.js";
+import { asyncMiddleware } from "../middleware/async.js";
 
-const objectId = Joi.string()
-    .hex()
-    .length(24)
-    .messages({
-        "string.hex": "customerId / movieId must be a valid hexadecimal string",
-        "string.length": "customerId / movieId must be 24 characters long",
-        "any.required": "customerId / movieId is required"
-    });
+export const getRentals = asyncMiddleware(async (req, res) => {
+    const query = req.user.isAdmin ? {} : { 'user._id': req.user._id };
+    const rentals = await Rental.find(query).sort('-dateOut');
+    res.send(rentals);
+});
 
-export const getRentals = async (req, res) => {
-    try {
-        const query = req.user.isAdmin ? {} : { 'user._id': req.user._id };
-        const rentals = await Rental.find(query).sort('-dateOut');
-        res.send(rentals);
-    } catch (error) {
-        res.status(500).send('Internal Server Error');
-    }
-}
-
-export const getRental = async (req, res) => {
+export const getRental = asyncMiddleware(async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id))
         return res.status(400).send('Invalid Rental');
 
-    try {
-        const query = req.user.isAdmin ? { _id: req.params.id } : { _id: req.params.id, 'user._id': req.user._id };
-        const rental = await Rental.findOne(query);
-        if (!rental) return res.status(404).send('Rental not found');
-        res.send(rental);
-    } catch (error) {
-        res.status(500).send('Internal Server Error');
-    }
-}
+    const query = req.user.isAdmin ? { _id: req.params.id } : { _id: req.params.id, 'user._id': req.user._id };
+    const rental = await Rental.findOne(query);
+    if (!rental) return res.status(404).send('Rental not found');
+    res.send(rental);
+});
 
-export const deleteRental = async (req, res) => {
-    try {
-        const query = req.user.isAdmin ? { _id: req.params.id } : { _id: req.params.id, 'user._id': req.user._id };
-        const rental = await Rental.findOneAndDelete(query);
-        if (!rental) return res.status(404).send('Rental not found');
-        res.send(rental);
-    } catch (error) {
-        res.status(500).send('Internal Server Error');
-    }
-}
+export const deleteRental = asyncMiddleware(async (req, res) => {
+    const query = req.user.isAdmin ? { _id: req.params.id } : { _id: req.params.id, 'user._id': req.user._id };
+    const rental = await Rental.findOneAndDelete(query);
+    if (!rental) return res.status(404).send('Rental not found');
+    res.send(rental);
+});
 
-export const updateRental = async (req, res) => {
+export const updateRental = asyncMiddleware(async (req, res) => {
     const { error } = validateRentalUpdate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
@@ -82,20 +63,16 @@ export const updateRental = async (req, res) => {
         };
     }
 
-    try {
-        const rental = await Rental.findOneAndUpdate(
-            query,
-            { $set: updateData },
-            { returnDocument: 'after', new: true }
-        );
-        if (!rental) return res.status(404).send('Rental not found');
-        res.send(rental);
-    } catch (error) {
-        res.status(500).send('Internal Server Error');
-    }
-}
+    const rental = await Rental.findOneAndUpdate(
+        query,
+        { $set: updateData },
+        { returnDocument: 'after', new: true }
+    );
+    if (!rental) return res.status(404).send('Rental not found');
+    res.send(rental);
+});
 
-export const createRental = async (req, res) => {
+export const createRental = asyncMiddleware(async (req, res) => {
     const { error } = validateRental(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
@@ -105,43 +82,39 @@ export const createRental = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.body.movieId))
         return res.status(400).send('Invalid movieId');
 
-    try {
-        const customer = await Customer.findById(req.body.customerId);
-        if (!customer) return res.status(400).send('Invalid customer.');
+    const customer = await Customer.findById(req.body.customerId);
+    if (!customer) return res.status(400).send('Invalid customer.');
 
-        const movie = await Movie.findById(req.body.movieId);
-        if (!movie) return res.status(400).send('Invalid Movie.');
+    const movie = await Movie.findById(req.body.movieId);
+    if (!movie) return res.status(400).send('Invalid Movie.');
 
-        if (movie.numberInStock === 0) return res.status(400).send('Movie out of stock.');
+    if (movie.numberInStock === 0) return res.status(400).send('Movie out of stock.');
 
-        const rental = new Rental({
-            user: {
-                _id: req.user._id,
-                name: req.user.name,
-                email: req.user.email
-            },
-            customer: {
-                _id: customer._id,
-                name: customer.name,
-                phone: customer.phone,
-                isGold: customer.isGold
-            },
-            movie: {
-                _id: movie._id,
-                title: movie.title,
-                dailyRentalRate: movie.dailyRentalRate
-            }
-        });
+    const rental = new Rental({
+        user: {
+            _id: req.user._id,
+            name: req.user.name,
+            email: req.user.email
+        },
+        customer: {
+            _id: customer._id,
+            name: customer.name,
+            phone: customer.phone,
+            isGold: customer.isGold
+        },
+        movie: {
+            _id: movie._id,
+            title: movie.title,
+            dailyRentalRate: movie.dailyRentalRate
+        }
+    });
 
-        const savedRental = await rental.save();
-        movie.numberInStock--;
-        await movie.save();
+    const savedRental = await rental.save();
+    movie.numberInStock--;
+    await movie.save();
 
-        res.send(savedRental);
-    } catch (error) {
-        res.status(500).send('Internal Server Error');
-    }
-}
+    res.send(savedRental);
+});
 
 function validateRental(rental) {
     const schema = Joi.object({

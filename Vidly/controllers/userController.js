@@ -2,47 +2,32 @@ import Joi from "joi";
 import bcrypt from "bcrypt";
 import _ from "lodash";
 import { User } from "../models/userModel.js";
+import { asyncMiddleware } from "../middleware/async.js";
 
-export const getUsers = async (_req, res) => {
-    try {
-        const users = await User.find().sort('name').select('-password');
-        res.send(users);
-    } catch (error) {
-        res.status(500).send('Internal Server Error');
-    }
-}
+export const getUsers = asyncMiddleware(async (_req, res) => {
+    const users = await User.find().sort('name').select('-password');
+    res.send(users);
+});
 
-export const getUser = async (req, res) => {
-    try {
-        const user = await User.findById(req.params.id).select('-password');
-        if (!user) return res.status(404).send('User not found');
-        res.send(user);
-    } catch (error) {
-        res.status(500).send('Internal Server Error');
-    }
-}
+export const getUser = asyncMiddleware(async (req, res) => {
+    const user = await User.findById(req.params.id).select('-password');
+    if (!user) return res.status(404).send('User not found');
+    res.send(user);
+});
 
-export const getCurrentUser = async (req, res) => {
-    try {
-        const user = await User.findById(req.user._id).select('-password, -isAdmin');
-        if (!user) return res.status(404).send('User not found');
-        res.status(200).send(user);
-    } catch (error) {
-        res.status(500).send('Internal Server Error');
-    }
-}
+export const getCurrentUser = asyncMiddleware(async (req, res) => {
+    const user = await User.findById(req.user._id).select('-password, -isAdmin');
+    if (!user) return res.status(404).send('User not found');
+    res.status(200).send(user);
+});
 
-export const deleteUser = async (req, res) => {
-    try {
-        const user = await User.findByIdAndRemove(req.params.id);
-        if (!user) return res.status(404).send('User not found');
-        res.send(user);
-    } catch (error) {
-        res.status(500).send('Internal Server Error');
-    }
-}
+export const deleteUser = asyncMiddleware(async (req, res) => {
+    const user = await User.findByIdAndRemove(req.params.id);
+    if (!user) return res.status(404).send('User not found');
+    res.send(user);
+});
 
-export const createUser = async (req, res) => {
+export const createUser = asyncMiddleware(async (req, res) => {
     const { error } = validateUser(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
@@ -55,30 +40,21 @@ export const createUser = async (req, res) => {
     req.body.password = await bcrypt.hash(req.body.password, salt);
 
     user = new User(_.pick(req.body, ['name', 'email', 'password', 'isAdmin']));
-    try {
-        user = await user.save();
+    user = await user.save();
 
-        //generate a JWT token and return it to the client
-        const token = user.generateAuthToken();
-        res.header('x-auth-token', token).send(_.pick(user, ['_id', 'name', 'email']));
-    }
-    catch (error) {
-        res.status(500).send('Internal Server Error');
-    }
-}
+    //generate a JWT token and return it to the client
+    const token = user.generateAuthToken();
+    res.header('x-auth-token', token).send(_.pick(user, ['_id', 'name', 'email']));
+});
 
-export const updateUser = async (req, res) => {
+export const updateUser = asyncMiddleware(async (req, res) => {
     const { error } = validateUser(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    try {
-        const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!user) return res.status(404).send('User not found');
-        res.send(user);
-    } catch (error) {
-        res.status(500).send('Internal Server Error');
-    }
-}
+    const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!user) return res.status(404).send('User not found');
+    res.send(user);
+});
 
 export const validateUser = (user) => {
     const schema = Joi.object({
