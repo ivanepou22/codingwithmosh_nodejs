@@ -9,7 +9,7 @@ export const logError = async (req, error, res) => {
     if (!user) return res.status(400).send('Invalid user');
 
     req.user = {
-        _id: user._id,
+        _id: req.user._id,
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin

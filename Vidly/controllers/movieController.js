@@ -68,9 +68,10 @@ export const createMovie = asyncMiddleware(async (req, res) => {
 
     const movie = new Movie({
         user: {
-            _id: user._id,
+            _id: req.user._id,
             name: user.name,
-            email: user.email
+            email: user.email,
+            isAdmin: user.isAdmin
         },
         title: req.body.title,
         genre: {

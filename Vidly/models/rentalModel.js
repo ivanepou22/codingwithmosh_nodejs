@@ -56,7 +56,8 @@ export const rentalSchema = new mongoose.Schema({
     user: {
         type: new mongoose.Schema({
             name: { type: String },
-            email: { type: String }
+            email: { type: String },
+            isAdmin: { type: Boolean }
         }),
         required: true
     }

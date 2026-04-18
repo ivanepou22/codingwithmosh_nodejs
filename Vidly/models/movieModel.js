@@ -10,7 +10,9 @@ export const movieSchema = new mongoose.Schema({
         maxlength: 250
     },
     genre: {
-        type: genreSchema,
+        type: new mongoose.Schema({
+            name: { type: String, required: true }
+        }),
         required: true
     },
     numberInStock: {

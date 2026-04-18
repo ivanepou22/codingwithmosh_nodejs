@@ -5,6 +5,7 @@ import { Customer } from "../models/customerModel.js";
 import { Rental } from "../models/rentalModel.js";
 import { objectId } from "../validation/customJoi.js";
 import { asyncMiddleware } from "../middleware/async.js";
+import { User } from "../models/userModel.js";
 
 export const getRentals = asyncMiddleware(async (req, res) => {
     const query = req.user.isAdmin ? {} : { 'user._id': req.user._id };
@@ -88,13 +89,17 @@ export const createRental = asyncMiddleware(async (req, res) => {
     const movie = await Movie.findById(req.body.movieId);
     if (!movie) return res.status(400).send('Invalid Movie.');
 
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(400).send('Invalid user.');
+
     if (movie.numberInStock === 0) return res.status(400).send('Movie out of stock.');
 
     const rental = new Rental({
         user: {
             _id: req.user._id,
-            name: req.user.name,
-            email: req.user.email
+            name: user.name,
+            email: user.email,
+            isAdmin: user.isAdmin
         },
         customer: {
             _id: customer._id,
