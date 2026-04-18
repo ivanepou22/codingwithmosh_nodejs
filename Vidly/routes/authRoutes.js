@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticate } from '../controllers/auth.js';
+import { authenticate } from '../controllers/authController.js';
 
 const authRoutes = express.Router();
 authRoutes.post('/', authenticate);
