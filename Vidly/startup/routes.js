@@ -7,6 +7,7 @@ import authRoutes from '../routes/authRoutes.js';
 import genreRoutes from '../routes/genreRoutes.js';
 import homeRoutes from '../routes/homeRoute.js';
 import { error } from '../middleware/error.js';
+import { verifyMongooseId } from '../middleware/mongooseError.js';
 
 export function routes(app) {
     app.use(express.json());
