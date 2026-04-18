@@ -5,7 +5,7 @@ export function asyncMiddleware(handler) {
         try {
             await handler(req, res);
         } catch (error) {
-            await logError(req, error);
+            await logError(req, error, res);
             next(error);
         }
     }

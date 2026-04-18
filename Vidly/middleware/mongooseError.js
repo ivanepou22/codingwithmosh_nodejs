@@ -6,7 +6,7 @@ export async function verifyMongooseId(err, req, res, next) {
     const id = req.params.id || req.body.id;
     if (!mongoose.Types.ObjectId.isValid(id)) {
         winston.warn('Invalid ID provided');
-        await logError(req, err);
+        await logError(req, err, res);
         return res.status(400).send('Invalid ID');
     }
     next();
