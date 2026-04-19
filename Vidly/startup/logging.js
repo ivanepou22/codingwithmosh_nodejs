@@ -20,7 +20,7 @@ export async function logging() {
 
 let options = {
     db: process.env.MONGODB_URL,
-    Collection: 'logs',
+    collection: 'logs',
     capped: false,
     expireAfterSeconds: 2592000,
     leaveConnectionOpen: false,
@@ -44,10 +44,10 @@ export async function logger({ messageString = '', additionalInfo = { error: nul
                     ? {
                         user: additionalInfo?.request?.user,
                         rawHeaders: additionalInfo?.request?.rawHeaders,
-                        reqheader: additionalInfo?.request?.headers,
-                        reqBody: additionalInfo?.request?.body,
-                        reqParam: additionalInfo?.request?.params,
-                        reqQuery: additionalInfo?.request?.query,
+                        reqheader: additionalInfo?.request?.reqheader,
+                        reqBody: additionalInfo?.request?.reqBody,
+                        reqParam: additionalInfo?.request?.reqParam,
+                        reqQuery: additionalInfo?.request?.reqQuery,
                     }
                     : null
             },
@@ -60,10 +60,10 @@ export async function logger({ messageString = '', additionalInfo = { error: nul
                 request: additionalInfo?.request
                     ? {
                         rawHeaders: additionalInfo?.request?.rawHeaders,
-                        reqheader: additionalInfo?.request?.headers,
-                        reqBody: additionalInfo?.request?.body,
-                        reqParam: additionalInfo?.request?.params,
-                        reqQuery: additionalInfo?.request?.query,
+                        reqheader: additionalInfo?.request?.reqheader,
+                        reqBody: additionalInfo?.request?.reqBody,
+                        reqParam: additionalInfo?.request?.reqParam,
+                        reqQuery: additionalInfo?.request?.reqQuery,
                     }
                     : null
             }
