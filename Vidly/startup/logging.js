@@ -59,6 +59,7 @@ export async function logger({ messageString = '', additionalInfo = { error: nul
                 error: err,
                 request: additionalInfo?.request
                     ? {
+                        user: additionalInfo?.request?.user,
                         rawHeaders: additionalInfo?.request?.rawHeaders,
                         reqheader: additionalInfo?.request?.reqheader,
                         reqBody: additionalInfo?.request?.reqBody,
