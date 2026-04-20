@@ -13,7 +13,7 @@ app.use(helmet());
 logging();
 routes(app);
 
-export default app;
+export default app;// used for testing
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
     dbConnect();

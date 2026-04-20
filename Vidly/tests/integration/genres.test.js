@@ -1,16 +1,13 @@
 import request from 'supertest';
 import dotenv from 'dotenv';
 import app from '../../index.js';
-import { dbConnect } from '../../startup/dbConfig.js';
-import { dbDisconnect } from '../../startup/dbConfig.js';
+import { dbConnect, dbDisconnect } from '../../startup/dbConfig.js';
 dotenv.config();
 
 describe('/api/genres', () => {
-    // Connect once before all tests
     beforeAll(async () => {
         await dbConnect();
     });
-    // Disconnect after all tests
     afterAll(async () => {
         await dbDisconnect();
     });
