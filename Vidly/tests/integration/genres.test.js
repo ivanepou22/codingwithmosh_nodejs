@@ -81,6 +81,16 @@ describe('/api/genres', () => {
                 .get(`/api/v1/genres/${genre._id}`).set('x-auth-token', `${token}`);
             expect(res.status).toBe(200);
             expect(res.body.name).toBe('Test Genre');
+            expect(res.body).toHaveProperty('name', genre.name);
+        }, 30000);
+
+        it('should return 404 for non-existent genre', async () => {
+            //decode the token to get the user id and role
+            const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+            const res = await request(app)
+                .get(`/api/v1/genres/69df557f08d7bf05bf5c065b`).set('x-auth-token', `${token}`);
+            expect(res.status).toBe(404);
         }, 30000);
 
     });
