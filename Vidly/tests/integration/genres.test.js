@@ -20,7 +20,7 @@ describe('/api/genres', () => {
     });
 
     const token = process.env.TEST_JWT_TOKEN;
-    describe('/api/v1/genres', () => {
+    describe('GET /api/v1/genres', () => {
         it('should return all genres', async () => {
             //decode the token to get the user id and role
             const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
@@ -55,7 +55,7 @@ describe('/api/genres', () => {
         }, 30000);
     });
 
-    describe('api/v1/genres/:id', () => {
+    describe('GET api/v1/genres/:id', () => {
 
         it('should return 404 for non-existent genre', async () => {
             const res = await request(app)
@@ -95,5 +95,29 @@ describe('/api/genres', () => {
 
     });
 
+    describe('POST /api/v1/genres', () => {
+        it('should return 401 if user is not authenticated', async () => {
+            const res = await request(app)
+                .post('/api/v1/genres')
+                .send({ name: 'New Genre' });
+            expect(res.status).toBe(401);
+        }, 30000);
 
+        it('should return 400 if genre name is less than 5 characters', async () => {
+            const res = await request(app)
+                .post('/api/v1/genres')
+                .set('x-auth-token', `${token}`)
+                .send({ name: 'New' });
+            expect(res.status).toBe(400);
+        }, 30000);
+
+        it('should return 400 if genre name is more than 50 characters', async () => {
+            const name = new Array(55).join('a'); // creates a string of 51 'a' characters
+            const res = await request(app)
+                .post('/api/v1/genres')
+                .set('x-auth-token', `${token}`)
+                .send({ name });
+            expect(res.status).toBe(400);
+        }, 30000);
+    });
 });
