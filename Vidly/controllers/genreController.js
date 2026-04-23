@@ -57,5 +57,5 @@ export const createGenre = asyncMiddleware(async (req, res) => {
     });
 
     const savedGenre = await genre.save();
-    res.send(savedGenre);
+    res.status(201).send(savedGenre);
 });
